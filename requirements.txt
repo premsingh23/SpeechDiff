@@ -1,0 +1,6 @@
+streamlit
+openai
+plotly
+moviepy
+scipy
+scikit-learn
