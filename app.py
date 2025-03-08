@@ -6,7 +6,7 @@ from moviepy.editor import VideoFileClip
 from scipy.spatial.distance import cosine
 
 # Set your OpenAI API key
-openai.api_key = 'YOUR_OPENAI_API_KEY'
+openai.api_key = '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'
 
 # Function to transcribe audio using Whisper
 def transcribe_audio(file_path):
@@ -30,18 +30,21 @@ def get_text_embedding(text):
     return response['data'][0]['embedding']
 
 # Streamlit app
-st.title("Multimedia Embedding Visualizer")
+st.title("Multimedia Similarity Checker")
 
-# Sidebar for input selection
+# Sidebar input selection
 input_type = st.sidebar.selectbox("Select Input Type", ["Text", "Audio", "Video"])
 
-uploaded_files = st.file_uploader("Upload Files", accept_multiple_files=True)
+# Ask for two files
+st.subheader("Upload Two Files for Comparison")
+file1 = st.file_uploader("Upload First File", type=["txt", "mp3", "wav", "mp4"], key="file1")
+file2 = st.file_uploader("Upload Second File", type=["txt", "mp3", "wav", "mp4"], key="file2")
 
-if uploaded_files:
+if file1 and file2:
     embeddings = []
     labels = []
 
-    for uploaded_file in uploaded_files:
+    for idx, uploaded_file in enumerate([file1, file2]):
         if input_type == "Text":
             text = uploaded_file.getvalue().decode("utf-8")
         elif input_type == "Audio":
@@ -58,7 +61,7 @@ if uploaded_files:
         embeddings.append(embedding)
         labels.append(uploaded_file.name)
 
-        st.write(f"**{uploaded_file.name}**")
+        st.write(f"**{uploaded_file.name}** - Transcribed Text:")
         st.write(text)
 
     # Convert embeddings to 2D using PCA
@@ -71,10 +74,6 @@ if uploaded_files:
     fig.update_layout(title="Embeddings Visualization", xaxis_title="PCA Component 1", yaxis_title="PCA Component 2")
     st.plotly_chart(fig)
 
-    # Calculate and display similarity percentages
-    if len(embeddings) > 1:
-        st.subheader("Similarity Percentages")
-        for i in range(len(embeddings)):
-            for j in range(i + 1, len(embeddings)):
-                similarity = 1 - cosine(embeddings[i], embeddings[j])
-                st.write(f"Similarity between **{labels[i]}** and **{labels[j]}**: {similarity * 100:.2f}%")
+    # Calculate similarity
+    similarity = 1 - cosine(embeddings[0], embeddings[1])
+    st.subheader(f"Similarity Percentage: **{similarity * 100:.2f}%**")
